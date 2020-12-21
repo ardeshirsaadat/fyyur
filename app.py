@@ -13,6 +13,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
+from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -167,7 +168,28 @@ def search_venues():
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
-  data=Venue.query.get(venue_id)
+  venue=Venue.query.get(venue_id)
+  upcoming_shows_objects = Show.query.filter(Show.venue_id==venue_id,Show.start_time>=datetime.now())
+  past_shows_objects = Show.query.filter(Show.venue_id==venue_id,Show.start_time<=datetime.now())
+  data = {
+    "id": venue.id,
+    "name": venue.name,
+    "genres": venue.genres,
+    "address": venue.address,
+    "city": venue.city,
+    "state": venue.state,
+    "phone": venue.phone,
+    "website": venue.website,
+    "facebook_link": venue.facebook_link,
+    "seeking_talent":venue.seeking_talent,
+    "seeking_description": venue.seeking_description,
+    "image_link":venue.image_link,
+    "upcoming_shows_count":Show.query.filter(Show.venue_id==venue_id,Show.start_time>=datetime.now()).count(),
+    "upcoming_shows":[{"artist_image_link":Artist.query.get(upcoming_show.artist_id).image_link,"artist_id":Artist.query.get(upcoming_show.artist_id).id,"artist_name":Artist.query.get(upcoming_show.artist_id).name,"start_time":str(upcoming_show.start_time)} for upcoming_show in upcoming_shows_objects],
+    "past_shows_count":Show.query.filter(Show.venue_id==venue_id,Show.start_time<=datetime.now()).count(),
+    "past_shows":[{"artist_image_link":Artist.query.get(past_show.artist_id).image_link,"artist_id":Artist.query.get(past_show.artist_id).id,"artist_name":Artist.query.get(past_show.artist_id).name,"start_time":str(past_show.start_time)} for past_show in past_shows_objects]
+   
+  }
   data1={
     "id": 1,
     "name": "The Musical Hop",
@@ -337,6 +359,26 @@ def show_artist(artist_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
   artist = Artist.query.get(artist_id)
+  upcoming_shows_objects = Show.query.filter(Show.artist_id==artist_id,Show.start_time>=datetime.now())
+  past_shows_objects = Show.query.filter(Show.artist_id==artist_id,Show.start_time<=datetime.now())
+  data = {
+    "id": artist.id,
+    "name": artist.name,
+    "genres": artist.genres,
+    "city": artist.city,
+    "state": artist.state,
+    "phone": artist.phone,
+    "website": artist.website,
+    "facebook_link": artist.facebook_link,
+    "seeking_venue":artist.seeking_venue,
+    "seeking_description": artist.seeking_description,
+    "image_link":artist.image_link,
+    "upcoming_shows_count":Show.query.filter(Show.artist_id==artist_id,Show.start_time>=datetime.now()).count(),
+    "upcoming_shows":[{"venue_image_link":Venue.query.get(upcoming_show.venue_id).image_link,"venue_id":Venue.query.get(upcoming_show.venue_id).id,"venue_name":Venue.query.get(upcoming_show.venue_id).name,"start_time":str(upcoming_show.start_time)} for upcoming_show in upcoming_shows_objects],
+    "past_shows_count":Show.query.filter(Show.artist_id==artist_id,Show.start_time<=datetime.now()).count(),
+    "past_shows":[{"venue_image_link":Venue.query.get(past_show.venue_id).image_link,"venue_id":Venue.query.get(past_show.venue_id).id,"venue_name":Venue.query.get(past_show.venue_id).name,"start_time":str(past_show.start_time)} for past_show in past_shows_objects]
+   
+  }
 
 
   data1={
@@ -411,7 +453,7 @@ def show_artist(artist_id):
     "upcoming_shows_count": 3,
   }
   # data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
-  return render_template('pages/show_artist.html', artist=artist)
+  return render_template('pages/show_artist.html', artist=data)
 
 #  Update
 #  ----------------------------------------------------------------
